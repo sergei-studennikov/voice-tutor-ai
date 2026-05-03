@@ -1,0 +1,51 @@
+services:
+  ollama:
+    image: ollama/ollama
+    container_name: voice-tutor-ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+
+  stt:
+    image: fedirz/faster-whisper-server:latest-cpu
+    container_name: voice-tutor-stt
+    environment:
+      - MODEL=base.en
+    ports:
+      - "9000:8000"
+    restart: unless-stopped
+
+  languagetool:
+    image: silviof/docker-languagetool
+    container_name: voice-tutor-lt
+    ports:
+      - "8010:8010"
+    restart: unless-stopped
+
+  tts:
+    image: rhasspy/wyoming-piper
+    container_name: voice-tutor-tts
+    # High-quality voice with TCP URI for Wyoming protocol
+    command: ["--voice", "en_US-lessac-high", "--uri", "tcp://0.0.0.0:10200"]
+    ports:
+      - "10200:10200"
+    restart: unless-stopped
+
+  api:
+    build: ./api
+    container_name: voice-tutor-api
+    depends_on:
+      - ollama
+      - stt
+      - languagetool
+      - tts
+    volumes:
+      - ./api:/app
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+volumes:
+  ollama_data:

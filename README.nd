@@ -1,0 +1,62 @@
+# Voice Tutor API
+
+This project is a real-time, voice-to-voice English tutor pipeline. It integrates **Faster-Whisper** for STT[cite: 1], **Ollama** for LLM tutoring[cite: 1], **LanguageTool** for grammar checking[cite: 1], and **Piper** for TTS[cite: 1].
+
+---
+
+## 🛠 Prerequisites
+
+*   **Docker & Docker Compose:** Required to orchestrate the service containers[cite: 1].
+*   **Miniconda:** Recommended to manage your local Python 3.11 environment for testing.
+
+---
+
+## 📦 Setup Instructions
+
+### 1. Python Environment
+Create and activate a local environment for running test scripts:
+
+```bash
+conda create -n voice-tutor python=3.11 -y
+conda activate voice-tutor
+pip install fastapi uvicorn httpx wyoming websockets
+```
+
+### 2. Start the Services
+Build and start the containerized infrastructure[cite: 2]:
+
+```bash
+docker compose build api && docker compose up -d
+```
+
+### 3. Download the LLM Model
+You must manually download the Llama 3.1 model into the Ollama container after it is running:
+
+```bash
+docker exec -it voice-tutor-ollama ollama pull llama3.1:8b-instruct-q4_K_M
+```
+
+---
+
+## 🧪 Testing & Verification
+
+We provide two main testing tiers to ensure the stack is operational:
+
+### A. External Service Check (`tests/test.py`)
+Use this script from your host machine to verify that the individual services (STT, Ollama, TTS) are reachable on their mapped ports (9000, 11434, 10200)[cite: 1].
+
+### B. Full Program Stack Test (`tests/test4.py`)
+Run this script to verify the end-to-end WebSocket pipeline. It simulates a user speaking, sends the audio to the API, and checks if the system correctly processes the request through all phases:
+1.  **STT:** Transcribing audio[cite: 1].
+2.  **LLM:** Generating a tutor response[cite: 1].
+3.  **TTS:** Synthesizing the final voice output[cite: 1].
+
+---
+
+## ⚙️ Service Architecture
+
+*   **Ollama (Port 11434):** Runs the Llama 3.1 model[cite: 1].
+*   **STT (Port 9000):** Faster-Whisper using the `base.en` model[cite: 1].
+*   **TTS (Port 10200):** Wyoming Piper using the `en_US-lessac-high` voice[cite: 1].
+*   **LanguageTool (Port 8010):** Provides grammar and style checking[cite: 1].
+*   **API (Port 8000):** FastAPI coordinator running on Python 3.11-slim[cite: 3].

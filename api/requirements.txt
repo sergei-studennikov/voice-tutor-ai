@@ -1,0 +1,9 @@
+psutil
+fastapi
+uvicorn[standard]
+websockets
+requests
+spacy
+numpy
+# For faster-whisper and piper integration
+wyoming
